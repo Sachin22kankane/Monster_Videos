@@ -24,6 +24,7 @@ public class Enemy : PoolableObject
     private readonly int climbHash = Animator.StringToHash("Climb");
     private readonly int climbUpHash = Animator.StringToHash("ClimbUp");
     private readonly int deathHash = Animator.StringToHash("Death");
+    private readonly int attackHash = Animator.StringToHash("Attack");
     private int currentState;
     private CharacterController controller;
     private Vector3 velocity;
@@ -34,6 +35,7 @@ public class Enemy : PoolableObject
     private bool isClimbing;
     private bool isClimbingUp;
     private float buildingTopY;
+    private bool canStop;
     
 
     void Start()
@@ -107,9 +109,11 @@ public class Enemy : PoolableObject
         }
         
         moveDir = target.position - transform.position + offset;
-        if (Vector3.Distance(target.position, transform.position) < 2f)
+        canStop = Vector3.Distance(target.position, transform.position) < 2f;
+        if (canStop)
         {
             moveDir = Vector3.zero;
+            PlayAnim(attackHash);
         }
         moveDir.y = 0;
         moveDir = moveDir.normalized;
@@ -165,7 +169,7 @@ public class Enemy : PoolableObject
             return;
         }
 
-        if (!isJumping)
+        if (!isJumping && !canStop)
         {
             if (isMoving)
                 PlayAnim(runHash);
@@ -185,8 +189,12 @@ public class Enemy : PoolableObject
 
     public void Dead()
     {
-        BloodParticle bloodParticle = ObjectPooling.Instance.Spawn<BloodParticle>(transform.position + new Vector3(0,1,0));
+        Vector3 spawnPos = transform.position + new Vector3(0, 1, 0);
+        BloodParticle bloodParticle = ObjectPooling.Instance.Spawn<BloodParticle>(spawnPos);
         bloodParticle.Play(-transform.forward);
+        Vector3 floatingTextSpawnPos = CameraShake.instance.cam.WorldToScreenPoint(spawnPos);
+        FloatingText floatingText = ObjectPooling.Instance.Spawn<FloatingText>(floatingTextSpawnPos);
+        floatingText.ShowText(Random.Range(5,15));
         GetComponent<Collider>().enabled = false;
         isDead = true;
         PlayAnim(deathHash);

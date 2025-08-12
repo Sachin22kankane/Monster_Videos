@@ -1,6 +1,10 @@
 using System;
 using DG.Tweening;
+using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 public class PlayerController : MonoBehaviour
 {
@@ -37,6 +41,14 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private Transform cam;
     Vector3 camForward, camRight, move;
+    [SerializeField] private Material playerMaterial;
+    //[SerializeField] SkinnedMeshRenderer skinnedMeshRenderer;
+    private string floatPropertyName = "_EmissiveIntensity";
+    [SerializeField] private Animation damageEffectAnim;
+    private float currentHealth;
+    public float maxHealth;
+    [SerializeField] private Image fillBar;
+    [SerializeField] private GameObject healthBar;
 
     private void Awake()
     {
@@ -48,6 +60,10 @@ public class PlayerController : MonoBehaviour
         controller = GetComponent<CharacterController>();
         currentState = idleHash;
         animator.Play(idleHash);
+        playerMaterial.SetFloat(floatPropertyName,0f);
+        currentHealth =  maxHealth;
+        UpdateHealthUi();
+        //playerMaterial = skinnedMeshRenderer.material;
     }
 
     void Update()
@@ -195,5 +211,51 @@ public class PlayerController : MonoBehaviour
 
         animator.CrossFadeInFixedTime(targetHash, 0.25f);
         currentState = targetHash;
+    }
+
+    [SerializeField] private VolumeProfile globalProfile; // Assign the Global Volume Profile from Project Settings
+    private ColorAdjustments colorAdjustments;
+    private bool die;
+    public void Damage()
+    {
+        if(die == true) return;
+        DOTween.Kill(playerMaterial); // Prevent stacking animations
+        damageEffectAnim.Play();
+        currentHealth -= 50;
+        UpdateHealthUi();
+        if (currentHealth <= 0)
+        {
+            print("Die");
+            if (globalProfile != null && globalProfile.TryGet(out ColorAdjustments colorAdjustments))
+            {
+                colorAdjustments.saturation.value = -60f;
+                die = true;
+            }
+            else
+            {
+                Debug.LogWarning("Color Adjustments not found in the profile!");
+            }
+        }
+        playerMaterial.DOFloat(1f, floatPropertyName, 0.05f)
+            .OnComplete(() =>
+            {
+                playerMaterial.DOFloat(0f, floatPropertyName, 0.05f);
+            });
+    }
+    
+
+    void UpdateHealthUi()
+    {
+        fillBar.fillAmount = (float) currentHealth / maxHealth;
+        if (currentHealth <= 0)
+        {
+            healthBar.SetActive(false);
+            
+        }
+    }
+
+    void LateUpdate()
+    {
+        healthBar.transform.LookAt(transform.position + cam.transform.forward);
     }
 }

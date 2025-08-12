@@ -42,7 +42,8 @@ public class Enemy : PoolableObject
         target = PlayerController.instance.transform;
         currentState = idleHash;
         animator.Play(idleHash);
-        offset = new Vector3(Random.Range(-3,3),0,Random.Range(-3,3));
+        offset = new Vector3(Random.Range(-3,3),0,Random.Range(-1,1));
+        moveSpeed = Random.Range(3.5f, 5.5f);
     }
 
     void Update()
@@ -105,8 +106,8 @@ public class Enemy : PoolableObject
             return;
         }
         
-        moveDir = target.position - transform.position;
-        if (Vector3.Distance(target.position, transform.position + offset) < 2f)
+        moveDir = target.position - transform.position + offset;
+        if (Vector3.Distance(target.position, transform.position) < 2f)
         {
             moveDir = Vector3.zero;
         }

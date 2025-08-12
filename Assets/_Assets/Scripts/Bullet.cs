@@ -45,6 +45,7 @@ public class Bullet : PoolableObject
             if (bulletDeactivateCoroutine != null)
             {
                 StopCoroutine(bulletDeactivateCoroutine);
+                bulletDeactivateCoroutine = null;
             }
         }
     }

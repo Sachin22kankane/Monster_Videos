@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections;
 using Unity.Cinemachine;
+using DG.Tweening;
+
 public class CameraShake : MonoBehaviour
 {
     public static CameraShake instance;
@@ -55,6 +57,20 @@ public class CameraShake : MonoBehaviour
             out pos
         );
         return pos;
+    }
+
+    public void ChangeFov(float fov, float duration = 1f)
+    {
+        if (virtualCamera != null)
+        {
+            // Smoothly change the FOV
+            DOTween.To(
+                () => virtualCamera.Lens.FieldOfView,     // Getter
+                x => virtualCamera.Lens.FieldOfView = x, // Setter
+                fov,                                 // Target value
+                duration                                   // Time
+            );
+        }
     }
 }
 

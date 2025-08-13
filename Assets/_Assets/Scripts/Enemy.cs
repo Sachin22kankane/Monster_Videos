@@ -189,16 +189,17 @@ public class Enemy : PoolableObject
 
     public void Dead()
     {
+        PulseEmission(1,0.05f);
         Vector3 spawnPos = transform.position + new Vector3(0, 1, 0);
         BloodParticle bloodParticle = ObjectPooling.Instance.Spawn<BloodParticle>(spawnPos);
         bloodParticle.Play(-transform.forward);
         Vector3 floatingTextSpawnPos = CameraShake.instance.cam.WorldToScreenPoint(spawnPos);
         FloatingText floatingText = ObjectPooling.Instance.Spawn<FloatingText>(floatingTextSpawnPos);
-        floatingText.ShowText(Random.Range(5,15));
+        floatingText.ShowText(1);
         GetComponent<Collider>().enabled = false;
         isDead = true;
         PlayAnim(deathHash);
-        DOVirtual.DelayedCall(0.5f, () =>
+        DOVirtual.DelayedCall(0.75f, () =>
         {
             gameObject.SetActive(false);
         });
@@ -210,6 +211,40 @@ public class Enemy : PoolableObject
         transform.position = spawnPos;
         gameObject.SetActive(true);
     }
+    
+    [SerializeField] private SkinnedMeshRenderer targetRenderer;
+    [SerializeField] private string floatPropertyName = "_EmissiveIntensity"; // or your shader's float name
+    private MaterialPropertyBlock mpb;
+    const string EMISSION_TWEEN_ID = "EmissionTween";
+    private float currentValue;
+
+    void Awake()
+    {
+        mpb = new MaterialPropertyBlock();
+    }
+
+    public void PulseEmission(float maxValue, float duration)
+    {
+        DOTween.Kill(EMISSION_TWEEN_ID); // Kill old tween if running
+
+        // Tween up
+        DOTween.To(() => currentValue, SetEmissionValue, maxValue, duration)
+            .OnComplete(() =>
+            {
+                // Tween down
+                DOTween.To(() => currentValue, SetEmissionValue, 0f, duration);
+            })
+            .SetId(EMISSION_TWEEN_ID);
+    }
+
+    private void SetEmissionValue(float value)
+    {
+        currentValue = value;
+        targetRenderer.GetPropertyBlock(mpb,0);
+        mpb.SetFloat(floatPropertyName, currentValue);
+        targetRenderer.SetPropertyBlock(mpb,0);
+    }
+
     
     
 }

@@ -15,7 +15,7 @@ public class FloatingText : PoolableObject
     public void ShowText(int score)
     {
         gameObject.SetActive(true);
-        scoreText.text = score.ToString();
+        scoreText.text = "+" + score.ToString();
         anim.Play();
     }
 

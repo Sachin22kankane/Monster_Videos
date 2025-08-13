@@ -1,12 +1,14 @@
 using DG.Tweening;
 using Unity.Cinemachine;
 using UnityEngine;
+using DG.Tweening;
 
 public class UpgradeTrigger : MonoBehaviour
 {
     [SerializeField] Transform rightOption, leftOption;
     [SerializeField] private Transform[] fences;
     [SerializeField] private GameObject fenceParent;
+    [SerializeField] private GameObject canvas;
     
     private void OnTriggerEnter(Collider other)
     {
@@ -21,6 +23,8 @@ public class UpgradeTrigger : MonoBehaviour
     public CinemachineCamera virtualCamera;
     public void Build()
     {
+        canvas.transform.DOScale(Vector3.zero,0.25f);
+        canvas.SetActive(false);
         rightOption.gameObject.SetActive(false);
         leftOption.gameObject.SetActive(false);
         Time.timeScale = 1f;
@@ -30,16 +34,8 @@ public class UpgradeTrigger : MonoBehaviour
             fence.localScale = Vector3.zero;
             fence.DOScale(Vector3.one, 0.75f).SetDelay(0.25f);
         }
-        if (virtualCamera != null)
-        {
-            // Smoothly change the FOV
-            DOTween.To(
-                () => virtualCamera.Lens.FieldOfView,     // Getter
-                x => virtualCamera.Lens.FieldOfView = x, // Setter
-                70,                                 // Target value
-                1f                                   // Time
-            );
-        }
+        CameraShake.instance.ChangeFov(70);
+        
     }
     
 }

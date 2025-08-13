@@ -37,6 +37,7 @@ public class PlayerController : MonoBehaviour
     private readonly int jumpHash = Animator.StringToHash("Jump");
     private readonly int climbHash = Animator.StringToHash("Climb");
     private readonly int climbUpHash = Animator.StringToHash("ClimbUp");
+    private readonly int deathHash = Animator.StringToHash("Death");
     private int currentState;
 
     [SerializeField] private Transform cam;
@@ -49,6 +50,7 @@ public class PlayerController : MonoBehaviour
     public float maxHealth;
     [SerializeField] private Image fillBar;
     [SerializeField] private GameObject healthBar;
+    [SerializeField] private Volume volume;
 
     private void Awake()
     {
@@ -77,7 +79,7 @@ public class PlayerController : MonoBehaviour
     // --------------------------------------
     void DetectClimbable()
     {
-        if (isClimbingUp) return; // prevent detection while climb-up animation is playing
+        if (isClimbingUp || die) return; // prevent detection while climb-up animation is playing
 
         // Forward ray to detect climbable wall
         if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hit, climbCheckDistance, wallLayer))
@@ -113,7 +115,7 @@ public class PlayerController : MonoBehaviour
     // --------------------------------------
     void HandleMovement()
     {
-        if (isClimbingUp) return; // block input
+        if (isClimbingUp || die) return; // block input
 
         moveDir = new Vector3(joystick.Horizontal, 0f, joystick.Vertical).normalized;
         camForward = cam.forward;
@@ -160,7 +162,7 @@ public class PlayerController : MonoBehaviour
 
         bool isGrounded = controller.isGrounded || (velocity.y < 0 && Physics.Raycast(transform.position, Vector3.down, 0.2f));
 
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded && !die)
         {
             velocity.y = jumpForce;
             isJumping = true;
@@ -183,6 +185,11 @@ public class PlayerController : MonoBehaviour
     // --------------------------------------
     void HandleAnimation()
     {
+        if (die)
+        {
+            return;
+        }
+        
         if (isClimbingUp)
         {
             PlayAnim(climbUpHash);
@@ -213,7 +220,7 @@ public class PlayerController : MonoBehaviour
         currentState = targetHash;
     }
 
-    [SerializeField] private VolumeProfile globalProfile; // Assign the Global Volume Profile from Project Settings
+     // Assign the Global Volume Profile from Project Settings
     private ColorAdjustments colorAdjustments;
     private bool die;
     public void Damage()
@@ -223,18 +230,24 @@ public class PlayerController : MonoBehaviour
         damageEffectAnim.Play();
         currentHealth -= 50;
         UpdateHealthUi();
+        
         if (currentHealth <= 0)
         {
             print("Die");
-            if (globalProfile != null && globalProfile.TryGet(out ColorAdjustments colorAdjustments))
+            gameObject.tag = "Untagged";
+            die = true;
+            PlayAnim(deathHash);
+            GetComponent<Shooting>().enabled = false;
+            if (volume != null && volume.profile.TryGet(out colorAdjustments))
             {
-                colorAdjustments.saturation.value = -60f;
-                die = true;
+                colorAdjustments.saturation.value = -60f; // Initial value
             }
             else
             {
                 Debug.LogWarning("Color Adjustments not found in the profile!");
             }
+            CameraShake.instance.ChangeFov(80);
+            Time.timeScale = 0.45f;
         }
         playerMaterial.DOFloat(1f, floatPropertyName, 0.05f)
             .OnComplete(() =>

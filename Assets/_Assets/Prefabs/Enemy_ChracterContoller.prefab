@@ -208,6 +208,8 @@ MonoBehaviour:
   isDead: 0
   animator: {fileID: 8517951405050979795}
   target: {fileID: 0}
+  targetRenderer: {fileID: 4419845214168465569}
+  floatPropertyName: _EmissiveIntensity
 --- !u!143 &1269193004244050507
 CharacterController:
   m_ObjectHideFlags: 0
@@ -254,6 +256,11 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.4, y: 2, z: 0.4}
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!137 &4419845214168465569 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 2892776902327588367, guid: 1e5d7fdae97ab34419d40ffff00d277b, type: 3}
+  m_PrefabInstance: {fileID: 1545654456833021614}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &7787318068392317026 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8746368760942249676, guid: 1e5d7fdae97ab34419d40ffff00d277b, type: 3}

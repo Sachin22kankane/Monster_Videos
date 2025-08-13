@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using System.Collections;
 using Unity.Cinemachine;
@@ -17,6 +18,7 @@ public class CameraShake : MonoBehaviour
     private float defaultFrequency;
     private Coroutine shakeCoroutine;
     [SerializeField] RectTransform canvasRect;
+    private CinemachineFollow followComponent;
 
     void Awake()
     {
@@ -25,6 +27,28 @@ public class CameraShake : MonoBehaviour
         noise = virtualCamera.GetCinemachineComponent(CinemachineCore.Stage.Noise) as CinemachineBasicMultiChannelPerlin;
         defaultAmplitude = noise.AmplitudeGain;
         defaultFrequency = noise.FrequencyGain;
+        followComponent = virtualCamera.GetComponent<CinemachineFollow>();
+    }
+
+    private void Start()
+    {
+        Vector3 currentRotation = virtualCamera.transform.eulerAngles;
+        Vector3 targetRotation = new Vector3(60, currentRotation.y, currentRotation.z);
+        ChangeFollowOffset(new Vector3(0,13,-10));
+        virtualCamera.transform
+            .DORotate(targetRotation, 2)
+            .SetEase(Ease.InOutSine).SetDelay(2);
+        
+    }
+    
+    public void ChangeFollowOffset(Vector3 newOffset)
+    {
+        DOTween.To(
+            () => followComponent.FollowOffset,
+            x => followComponent.FollowOffset = x,
+            newOffset,
+            2
+        ).SetEase(Ease.InOutSine).SetDelay(2);
     }
 
     public void Shake(float duration)

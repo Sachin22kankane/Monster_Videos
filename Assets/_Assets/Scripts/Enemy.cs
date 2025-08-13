@@ -138,12 +138,12 @@ public class Enemy : PoolableObject
         if (isClimbing || isClimbingUp) return; // disable gravity during climb or climb-up
 
         bool isGrounded = controller.isGrounded || (velocity.y < 0 && Physics.Raycast(transform.position, Vector3.down, 0.2f));
-
         
-
         if (!isGrounded)
         {
             velocity.y += gravity * Time.deltaTime;
+            isJumping = true;
+            PlayAnim(jumpHash);
         }
         else if (velocity.y < 0)
         {

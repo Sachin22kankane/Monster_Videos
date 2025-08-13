@@ -1,3 +1,4 @@
+using System.Collections;
 using DG.Tweening;
 using Unity.Cinemachine;
 using UnityEngine;
@@ -9,6 +10,7 @@ public class UpgradeTrigger : MonoBehaviour
     [SerializeField] private Transform[] fences;
     [SerializeField] private GameObject fenceParent;
     [SerializeField] private GameObject canvas;
+    [SerializeField] private ParticleSystem[] particle;
     
     private void OnTriggerEnter(Collider other)
     {
@@ -29,13 +31,21 @@ public class UpgradeTrigger : MonoBehaviour
         leftOption.gameObject.SetActive(false);
         Time.timeScale = 1f;
         fenceParent.SetActive(true);
-        foreach (Transform fence in fences)
+        StartCoroutine(SpawnFence());
+        CameraShake.instance.ChangeFov(70,0.25f);
+    }
+
+    IEnumerator SpawnFence()
+    {
+        yield return new WaitForSeconds(0.25f);
+        for (int i = 0; i < fences.Length; i++)
         {
-            fence.localScale = Vector3.zero;
-            fence.DOScale(Vector3.one, 0.75f).SetDelay(0.25f);
+            fences[i].localScale = Vector3.zero;
+            fences[i].gameObject.SetActive(true);
+            fences[i].DOScale(Vector3.one, 0.15f);
+            particle[i].Play();
+            yield return new WaitForSeconds(0.15f);
         }
-        CameraShake.instance.ChangeFov(70);
-        
     }
     
 }

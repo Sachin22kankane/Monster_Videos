@@ -9,25 +9,21 @@ public class Bullet : PoolableObject
     private Vector3 direction;
     private Coroutine bulletDeactivateCoroutine;
     [SerializeField] private ParticleSystem bulletTrail;
+    [SerializeField] ParticleSystem[] allParticles;
     
     private void Update()
     {
         if (EnemyTarget != null && !EnemyTarget.isDead)
         {
-            direction = (EnemyTarget.transform.position - transform.position).normalized;
+            direction = (EnemyTarget.transform.position + new Vector3(0,0.5f,0) - transform.position).normalized;
         }
-        else
-        {
-            direction = transform.forward;
-        }
-        
         transform.position += direction * speed * Time.deltaTime;
-        transform.forward = direction;
+        //transform.forward = direction;
     }
 
     public void Launch(Enemy _newTarget)
     {
-        EnemyTarget = _newTarget;
+        EnemyTarget =  _newTarget;
         gameObject.SetActive(true);
         bulletTrail.Play();
         bulletDeactivateCoroutine = StartCoroutine(DisableAfterSomeTime());
@@ -58,5 +54,10 @@ public class Bullet : PoolableObject
         bulletTrail.Stop();
         gameObject.SetActive(false);
         pool?.Release(this);
+    }
+
+    public void ChangeParticle(int index)
+    {
+        bulletTrail = allParticles[index];
     }
 }

@@ -34,6 +34,18 @@ public class UpgradeTrigger : MonoBehaviour
         StartCoroutine(SpawnFence());
         CameraShake.instance.ChangeFov(70,0.25f);
     }
+    
+    public void GunUpgrade()
+    {
+        canvas.transform.DOScale(Vector3.zero,0.25f);
+        canvas.SetActive(false);
+        rightOption.gameObject.SetActive(false);
+        leftOption.gameObject.SetActive(false);
+        Time.timeScale = 1f;
+        fenceParent.SetActive(true);
+        PlayerController.instance.GetComponent<Shooting>().SelectGunSet(1);
+        //CameraShake.instance.ChangeFov(70,0.25f);
+    }
 
     IEnumerator SpawnFence()
     {

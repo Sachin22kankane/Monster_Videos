@@ -178,6 +178,5 @@ public class Shooting : MonoBehaviour
             gunSets[i].EnableGuns(false);
         }
         gunSets[currentSelectedGunSet].EnableGuns(true);
-        bulletPrefab.ChangeParticle(gunIndex);
     }
 }

@@ -41,7 +41,7 @@ public class EnemySpawner : MonoBehaviour
             // Check for obstacles (like buildings)
             if (!Physics.CheckSphere(spawnPos, checkRadius, obstacleLayer))
             {
-                Boid boid = ObjectPooling.Instance.Spawn<Boid>(spawnPos);
+                //Boid boid = ObjectPooling.Instance.Spawn<Boid>(spawnPos);
                 //boid.ActiveEnemy(player);
                 spawned++;
             }

@@ -94,6 +94,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a57ca851b7c2e944aab45fe0b8805f45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  damage: 50
 --- !u!1001 &1545654456833021614
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -202,6 +203,7 @@ MonoBehaviour:
   moveSpeed: 4
   rotationSpeed: 8
   jumpForce: 6
+  stoppingDistance: 2
   gravity: -15
   climbSpeed: 3
   climbCheckDistance: 0.5
@@ -211,6 +213,10 @@ MonoBehaviour:
   isDead: 0
   animator: {fileID: 8517951405050979795}
   target: {fileID: 0}
+  isBoss: 0
+  maxHealth: 10
+  fillBar: {fileID: 0}
+  healthBar: {fileID: 0}
   targetRenderer: {fileID: 4419845214168465569}
   floatPropertyName: _EmissiveIntensity
 --- !u!143 &1269193004244050507

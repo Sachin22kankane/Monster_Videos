@@ -3,6 +3,11 @@ using UnityEngine.Pool;
 using System;
 using System.Collections.Generic;
 
+public enum PoolType
+{
+    BulletGreen, BulletRed, GreenBlood, ScoreText, yellowBlood, goldCoin
+}
+
 public class ObjectPooling : MonoBehaviour
 {
     public static ObjectPooling Instance;
@@ -10,6 +15,7 @@ public class ObjectPooling : MonoBehaviour
     [System.Serializable]
     public class PoolEntry
     {
+        public PoolType poolType;
         public PoolableObject prefab;
         public int defaultCapacity = 10;
         public int maxSize = 50;
@@ -18,8 +24,9 @@ public class ObjectPooling : MonoBehaviour
 
     public List<PoolEntry> poolPrefabs;
 
-    private Dictionary<Type, ObjectPool<PoolableObject>> poolMap = new();
-    private Dictionary<Type, PoolableObject> prefabMap = new();
+    private Dictionary<PoolType, ObjectPool<PoolableObject>> poolMap = new();
+    //private Dictionary<String, ObjectPool<PoolableObject>> poolMap = new();
+    //private Dictionary<String, PoolableObject> prefabMap = new();
 
     private void Awake()
     {
@@ -27,17 +34,13 @@ public class ObjectPooling : MonoBehaviour
         
         foreach (var entry in poolPrefabs)
         {
-            var type = entry.prefab.GetType();
-
-            if (prefabMap.ContainsKey(type))
+            if (poolMap.ContainsKey(entry.poolType))
                 continue;
-
-            prefabMap[type] = entry.prefab;
 
             ObjectPool<PoolableObject> pool = null;
 
             pool = new ObjectPool<PoolableObject>(
-                () => CreateObject(entry.prefab, pool,entry.parent),
+                () => CreateObject(entry.prefab, pool, entry.parent),
                 OnGetFromPool,
                 OnReleaseToPool,
                 OnDestroyPooledObject,
@@ -46,7 +49,7 @@ public class ObjectPooling : MonoBehaviour
                 maxSize: entry.maxSize
             );
 
-            poolMap[type] = pool;
+            poolMap[entry.poolType] = pool;
         }
     }
 
@@ -73,16 +76,22 @@ public class ObjectPooling : MonoBehaviour
         Destroy(obj.gameObject);
     }
 
-    public T Spawn<T>(Vector3 pos) where T : PoolableObject
+     /// <summary>
+    /// Spawn object using string key
+    /// </summary>
+    public T Spawn<T>(PoolType poolType, Vector3 pos) where T : PoolableObject
     {
-        var type = typeof(T);
-        if (!poolMap.TryGetValue(type, out var pool))
+        if (!poolMap.TryGetValue(poolType, out var pool))
         {
-            Debug.LogError($"No pool registered for type: {type.Name}");
+            Debug.LogError($"No pool registered with ID: {poolType}");
             return null;
         }
 
         var obj = pool.Get();
+        if (obj == null)
+        {
+            return null;
+        }
         obj.transform.position = pos;
         return obj as T;
     }

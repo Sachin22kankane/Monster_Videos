@@ -38,6 +38,7 @@ public class PlayerController : MonoBehaviour
     private readonly int climbHash = Animator.StringToHash("Climb");
     private readonly int climbUpHash = Animator.StringToHash("ClimbUp");
     private readonly int deathHash = Animator.StringToHash("Death");
+    private readonly int winHash = Animator.StringToHash("Win");
     private int currentState;
 
     [SerializeField] private Transform cam;
@@ -70,6 +71,12 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            die = true;
+            PlayAnim(winHash);
+            CameraShake.instance.ChangeFov(40);
+        }
         DetectClimbable();
         HandleMovement();
         HandleJumpAndGravity();
@@ -94,7 +101,6 @@ public class PlayerController : MonoBehaviour
             }
             return;
         }
-
         isClimbing = false;
     }
     
@@ -223,12 +229,12 @@ public class PlayerController : MonoBehaviour
      // Assign the Global Volume Profile from Project Settings
     private ColorAdjustments colorAdjustments;
     private bool die;
-    public void Damage()
+    public void Damage(float damage)
     {
         if(die == true) return;
         DOTween.Kill(playerMaterial); // Prevent stacking animations
         damageEffectAnim.Play();
-        currentHealth -= 50;
+        currentHealth -= damage;
         UpdateHealthUi();
         
         if (currentHealth <= 0)

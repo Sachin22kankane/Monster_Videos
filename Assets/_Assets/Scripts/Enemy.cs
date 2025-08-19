@@ -2,6 +2,7 @@ using System;
 using DG.Tweening;
 using UnityEngine;
 using Random = UnityEngine.Random;
+using UnityEngine.UI;
 
 public class Enemy : PoolableObject
 {
@@ -9,6 +10,7 @@ public class Enemy : PoolableObject
     public float moveSpeed = 5f;
     public float rotationSpeed = 10f;
     public float jumpForce = 6f;
+    public float stoppingDistance = 2f;
     public float gravity = -20f;
     public float climbSpeed = 3f;
     public float climbCheckDistance = 1f;
@@ -36,15 +38,22 @@ public class Enemy : PoolableObject
     private bool isClimbingUp;
     private float buildingTopY;
     private bool canStop;
-    
+    public bool isBoss;
+
+    private float currenHealth;
+    [SerializeField] private float maxHealth;
 
     void Start()
     {
+        currenHealth = maxHealth;
         controller = GetComponent<CharacterController>();
         target = PlayerController.instance.transform;
         currentState = idleHash;
         animator.Play(idleHash);
-        offset = new Vector3(Random.Range(-3,3),0,Random.Range(-1,1));
+        if (!isBoss)
+        {
+            offset = new Vector3(Random.Range(-3,3),0,Random.Range(-1,1));
+        }
         moveSpeed = Random.Range(3.5f, 5.5f);
     }
 
@@ -109,7 +118,7 @@ public class Enemy : PoolableObject
         }
         
         moveDir = target.position - transform.position + offset;
-        canStop = Vector3.Distance(target.position, transform.position) < 2f;
+        canStop = Vector3.Distance(target.position, transform.position) < stoppingDistance;
         if (canStop)
         {
             moveDir = Vector3.zero;
@@ -187,15 +196,54 @@ public class Enemy : PoolableObject
         currentState = targetHash;
     }
 
+    public void Damage()
+    {
+        currenHealth -= 10;
+        PulseEmission(1,0.05f);
+        if (currenHealth <= 0)
+        {
+            Dead();
+        }
+        UpdateHealthUi();
+        Vector3 spawnPos = transform.position + new Vector3(0, 1, 0);
+
+        if (isBoss)
+        {
+            var bloodParticle = ObjectPooling.Instance.Spawn<BloodParticle>(PoolType.yellowBlood,spawnPos);
+            bloodParticle.Play(-transform.forward);
+        }
+        else
+        {
+            var bloodParticle = ObjectPooling.Instance.Spawn<BloodParticle>(PoolType.GreenBlood,spawnPos);
+            bloodParticle.Play(-transform.forward);
+        }
+        
+    }
+    
+    [SerializeField] private Image fillBar;
+    [SerializeField] private GameObject healthBar;
+    
+    void UpdateHealthUi()
+    {
+        if (healthBar != null)
+        {
+            fillBar.fillAmount = (float) currenHealth / maxHealth;
+            if (currenHealth <= 0)
+            {
+                healthBar.SetActive(false);
+            }
+        }
+    }
+
     public void Dead()
     {
-        PulseEmission(1,0.05f);
-        Vector3 spawnPos = transform.position + new Vector3(0, 1, 0);
-        BloodParticle bloodParticle = ObjectPooling.Instance.Spawn<BloodParticle>(spawnPos);
-        bloodParticle.Play(-transform.forward);
-        Vector3 floatingTextSpawnPos = CameraShake.instance.cam.WorldToScreenPoint(spawnPos);
-        FloatingText floatingText = ObjectPooling.Instance.Spawn<FloatingText>(floatingTextSpawnPos);
-        floatingText.ShowText(1);
+        Vector3 spawnPos = transform.position + new Vector3(0, 1.75f, 0);
+        var coin = ObjectPooling.Instance.Spawn<BloodParticle>(PoolType.goldCoin,spawnPos);
+        coin.Play(Vector3.up);
+       // Vector3 floatingTextSpawnPos = CameraShake.instance.cam.WorldToScreenPoint(spawnPos);
+        //FloatingText floatingText = ObjectPooling.Instance.Spawn<FloatingText>(PoolType.ScoreText,floatingTextSpawnPos);
+       // floatingText.ShowText(1);
+        
         GetComponent<Collider>().enabled = false;
         isDead = true;
         PlayAnim(deathHash);
@@ -223,18 +271,25 @@ public class Enemy : PoolableObject
         mpb = new MaterialPropertyBlock();
     }
 
+    private bool pulseRunning;
     public void PulseEmission(float maxValue, float duration)
     {
-        DOTween.Kill(EMISSION_TWEEN_ID); // Kill old tween if running
-
+        if (pulseRunning == true)
+        {
+            return;
+        }
+         // Kill old tween if running
+        pulseRunning = true;
         // Tween up
         DOTween.To(() => currentValue, SetEmissionValue, maxValue, duration)
             .OnComplete(() =>
             {
                 // Tween down
-                DOTween.To(() => currentValue, SetEmissionValue, 0f, duration);
-            })
-            .SetId(EMISSION_TWEEN_ID);
+                DOTween.To(() => currentValue, SetEmissionValue, 0f, duration).OnComplete(() =>
+                {
+                    pulseRunning = false;
+                });
+            });
     }
 
     private void SetEmissionValue(float value)

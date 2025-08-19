@@ -6,21 +6,28 @@ public class Gun : MonoBehaviour
     public Transform bulletSpawnPos;
     public float fireRate;
 
+    private int[] spreadAngles = new[] {-4,-2,-1,0, 1,2,4};
+
     public void Shoot(Transform target, int index = 0)
     {
         if (index == 0)
         {
-            Bullet bullet1 = ObjectPooling.Instance.Spawn<Bullet>(bulletSpawnPos.position);
-            bullet1.Launch(target.GetComponent<Enemy>());
+            Bullet bullet = ObjectPooling.Instance.Spawn<Bullet>(PoolType.BulletGreen,bulletSpawnPos.position);
+            if (bullet != null)
+            {
+                bullet.Launch(target.GetComponent<Enemy>());
+            }
         }
         if (index == 1)
         {
-            Bullet bullet1 = ObjectPooling.Instance.Spawn<Bullet>(bulletSpawnPos.position);
-            Bullet bullet2 = ObjectPooling.Instance.Spawn<Bullet>(bulletSpawnPos.position);
-            Bullet bullet3 = ObjectPooling.Instance.Spawn<Bullet>(bulletSpawnPos.position);
-            // bullet1.Launch(target.position);
-            // bullet2.Launch( Quaternion.AngleAxis(1.5f, Vector3.up) * target.position);
-            // bullet3.Launch( Quaternion.AngleAxis(-1.5f, Vector3.up) * target.position);
+            for (int i = 0; i < 7; i++)
+            {
+                Bullet bullet = ObjectPooling.Instance.Spawn<Bullet>(PoolType.BulletRed,bulletSpawnPos.position);
+                if (bullet != null)
+                {
+                    bullet.Launch(Quaternion.AngleAxis(spreadAngles[i],Vector3.up) * target.position);
+                }
+            }
         }
         bulletMuzzle.Play();
     }

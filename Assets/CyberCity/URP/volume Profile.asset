@@ -328,7 +328,7 @@ MonoBehaviour:
   active: 0
   intensity:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   tintColor:
     m_OverrideState: 1
     m_Value: {r: 1, g: 1, b: 1, a: 1}
@@ -395,13 +395,13 @@ MonoBehaviour:
   active: 0
   type:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   intensity:
     m_OverrideState: 1
     m_Value: 0
   response:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 0.8
   texture:
     m_OverrideState: 1
     m_Value: {fileID: 0}
@@ -547,7 +547,7 @@ MonoBehaviour:
   active: 0
   intensity:
     m_OverrideState: 1
-    m_Value: 0.2
+    m_Value: 0
 --- !u!114 &4023794345607870039
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -566,7 +566,7 @@ MonoBehaviour:
     m_Value: 0
   cropToFit:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 1
 --- !u!114 &4076854235914297525
 MonoBehaviour:
   m_ObjectHideFlags: 3

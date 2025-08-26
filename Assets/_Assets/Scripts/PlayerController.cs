@@ -23,6 +23,7 @@ public class PlayerController : MonoBehaviour
     public Animator animator;
 
     private CharacterController controller;
+    private Shooting shooting;
     private Vector3 velocity;
     private Vector3 moveDir;
     private bool isJumping;
@@ -39,7 +40,10 @@ public class PlayerController : MonoBehaviour
     private readonly int climbUpHash = Animator.StringToHash("ClimbUp");
     private readonly int deathHash = Animator.StringToHash("Death");
     private readonly int winHash = Animator.StringToHash("Win");
+    private readonly int aimIdleHash = Animator.StringToHash("AimIdle");
+    private readonly int aimRunHash = Animator.StringToHash("AimRun");
     private int currentState;
+    private int currenActiveLayer;
 
     [SerializeField] private Transform cam;
     Vector3 camForward, camRight, move;
@@ -61,6 +65,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         controller = GetComponent<CharacterController>();
+        shooting = GetComponent<Shooting>();
         currentState = idleHash;
         animator.Play(idleHash);
         playerMaterial.SetFloat(floatPropertyName,0f);
@@ -106,7 +111,6 @@ public class PlayerController : MonoBehaviour
     
     void TriggerClimbUp()
     {
-        print("TriggerClimbUp");
         isClimbing = false;
         isClimbingUp = true;
         velocity = Vector3.zero;
@@ -210,10 +214,20 @@ public class PlayerController : MonoBehaviour
 
         if (!isJumping)
         {
-            if (isMoving)
-                PlayAnim(runHash);
+            if (shooting.hasRocketLauncher)
+            {
+                if (isMoving)
+                    PlayAnim(aimRunHash);
+                else
+                    PlayAnim(aimIdleHash);
+            }
             else
-                PlayAnim(idleHash);
+            {
+                if (isMoving)
+                    PlayAnim(runHash);
+                else
+                    PlayAnim(idleHash);
+            }
         }
     }
 
@@ -269,7 +283,6 @@ public class PlayerController : MonoBehaviour
         if (currentHealth <= 0)
         {
             healthBar.SetActive(false);
-            
         }
     }
 

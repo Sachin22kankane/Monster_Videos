@@ -15,7 +15,7 @@ public class Gun : MonoBehaviour
             Bullet bullet = ObjectPooling.Instance.Spawn<Bullet>(PoolType.BulletGreen,bulletSpawnPos.position);
             if (bullet != null)
             {
-                bullet.Launch(target.GetComponent<Enemy>());
+                bullet.Launch(target);
             }
         }
         if (index == 1)
@@ -27,6 +27,14 @@ public class Gun : MonoBehaviour
                 {
                     bullet.Launch(Quaternion.AngleAxis(spreadAngles[i],Vector3.up) * target.position);
                 }
+            }
+        }
+        if (index == 2)
+        {
+            Bullet bullet = ObjectPooling.Instance.Spawn<Bullet>(PoolType.missile,bulletSpawnPos.position);
+            if (bullet != null)
+            {
+                bullet.Launch(target);
             }
         }
         bulletMuzzle.Play();

@@ -129,7 +129,7 @@ Material:
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _Emissive: 1
-    - _EmissiveIntensity: 0
+    - _EmissiveIntensity: 0.09856838
     - _Emissive_Intensity: 0
     - _EnvironmentReflections: 1
     - _FalloffAmount: 0.4

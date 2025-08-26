@@ -10,8 +10,8 @@ public class CameraShake : MonoBehaviour
 
     public Camera cam;
     [SerializeField] private CinemachineCamera virtualCamera;
-    [SerializeField] private float shakeAmplitude = 1.5f;
-    [SerializeField] private float shakeFrequency = 2f;
+   // [SerializeField] private float shakeAmplitude = 1.5f;
+   // [SerializeField] private float shakeFrequency = 2f;
 
     private CinemachineBasicMultiChannelPerlin noise;
     private float defaultAmplitude;
@@ -38,9 +38,16 @@ public class CameraShake : MonoBehaviour
         virtualCamera.transform
             .DORotate(targetRotation, 2)
             .SetEase(Ease.InOutSine).SetDelay(2);
-        
     }
-    
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            SwitchFov();
+        }
+    }
+
     public void ChangeFollowOffset(Vector3 newOffset)
     {
         DOTween.To(
@@ -51,15 +58,15 @@ public class CameraShake : MonoBehaviour
         ).SetEase(Ease.InOutSine).SetDelay(2);
     }
 
-    public void Shake(float duration)
+    public void Shake(float duration,float shakeAmplitude = 1.5f,float shakeFrequency = 1.25f)
     {
         if (shakeCoroutine != null)
             StopCoroutine(shakeCoroutine);
 
-        shakeCoroutine = StartCoroutine(ShakeRoutine(duration));
+        shakeCoroutine = StartCoroutine(ShakeRoutine(shakeAmplitude, shakeFrequency,duration));
     }
 
-    private IEnumerator ShakeRoutine(float duration)
+    private IEnumerator ShakeRoutine(float duration,float shakeAmplitude,float shakeFrequency)
     {
         noise.AmplitudeGain = shakeAmplitude;
         noise.FrequencyGain = shakeFrequency;
@@ -95,6 +102,21 @@ public class CameraShake : MonoBehaviour
                 duration                                   // Time
             );
         }
+    }
+
+    private bool zoomin = true;
+    void SwitchFov()
+    {
+        zoomin = !zoomin;
+        if (zoomin)
+        {
+            ChangeFov(45,1f);
+        }
+        else
+        {
+            ChangeFov(70,1f);
+        }
+       
     }
 }
 

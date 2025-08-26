@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public enum PoolType
 {
-    BulletGreen, BulletRed, GreenBlood, ScoreText, yellowBlood, goldCoin
+    BulletGreen, BulletRed, GreenBlood, ScoreText, yellowBlood, goldCoin, missile, missileExplosion
 }
 
 public class ObjectPooling : MonoBehaviour

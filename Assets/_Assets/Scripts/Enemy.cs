@@ -53,8 +53,9 @@ public class Enemy : PoolableObject
         if (!isBoss)
         {
             offset = new Vector3(Random.Range(-3,3),0,Random.Range(-1,1));
+            moveSpeed = Random.Range(3.5f, 5.5f);
         }
-        moveSpeed = Random.Range(3.5f, 5.5f);
+        
     }
 
     void Update()
@@ -90,7 +91,6 @@ public class Enemy : PoolableObject
     
     void TriggerClimbUp()
     {
-        print("TriggerClimbUp");
         isClimbing = false;
         isClimbingUp = true;
         velocity = Vector3.zero;
@@ -199,7 +199,7 @@ public class Enemy : PoolableObject
     public void Damage()
     {
         currenHealth -= 10;
-        PulseEmission(1,0.05f);
+        PulseEmission(0.75f,0.05f);
         if (currenHealth <= 0)
         {
             Dead();
@@ -241,13 +241,19 @@ public class Enemy : PoolableObject
         var coin = ObjectPooling.Instance.Spawn<BloodParticle>(PoolType.goldCoin,spawnPos);
         coin.Play(Vector3.up);
        // Vector3 floatingTextSpawnPos = CameraShake.instance.cam.WorldToScreenPoint(spawnPos);
-        //FloatingText floatingText = ObjectPooling.Instance.Spawn<FloatingText>(PoolType.ScoreText,floatingTextSpawnPos);
-       // floatingText.ShowText(1);
-        
+       // FloatingText floatingText = ObjectPooling.Instance.Spawn<FloatingText>(PoolType.ScoreText,floatingTextSpawnPos);
+        //floatingText.ShowText(1);
+        if (emissionSeq != null && emissionSeq.IsActive())
+        {
+            emissionSeq.Kill();
+        }
+        SetEmissionValue(0.75f);
         GetComponent<Collider>().enabled = false;
+        controller.detectCollisions = false;
+        gameObject.layer = 0;
         isDead = true;
         PlayAnim(deathHash);
-        DOVirtual.DelayedCall(0.75f, () =>
+        DOVirtual.DelayedCall(0.8f, () =>
         {
             gameObject.SetActive(false);
         });
@@ -263,7 +269,6 @@ public class Enemy : PoolableObject
     [SerializeField] private SkinnedMeshRenderer targetRenderer;
     [SerializeField] private string floatPropertyName = "_EmissiveIntensity"; // or your shader's float name
     private MaterialPropertyBlock mpb;
-    const string EMISSION_TWEEN_ID = "EmissionTween";
     private float currentValue;
 
     void Awake()
@@ -272,9 +277,10 @@ public class Enemy : PoolableObject
     }
 
     private bool pulseRunning;
+    private Sequence emissionSeq;
     public void PulseEmission(float maxValue, float duration)
     {
-        if (pulseRunning == true)
+        /*if (pulseRunning == true)
         {
             return;
         }
@@ -289,7 +295,22 @@ public class Enemy : PoolableObject
                 {
                     pulseRunning = false;
                 });
-            });
+            });*/
+        
+        if (emissionSeq != null && emissionSeq.IsActive())
+        {
+            emissionSeq.Kill();
+        }
+
+        // Create new sequence
+        emissionSeq = DOTween.Sequence();
+
+        emissionSeq.Append(
+            DOTween.To(() => currentValue, SetEmissionValue, maxValue, duration)
+        );
+        emissionSeq.Append(
+            DOTween.To(() => currentValue, SetEmissionValue, 0f, duration)
+        );
     }
 
     private void SetEmissionValue(float value)
@@ -299,7 +320,5 @@ public class Enemy : PoolableObject
         mpb.SetFloat(floatPropertyName, currentValue);
         targetRenderer.SetPropertyBlock(mpb,0);
     }
-
-    
     
 }

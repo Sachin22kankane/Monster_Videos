@@ -766,7 +766,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 5.5
-  rotationSpeed: 8
+  rotationSpeed: 9
   jumpForce: 6
   stoppingDistance: 6
   gravity: -15

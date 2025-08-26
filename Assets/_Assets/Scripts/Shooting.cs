@@ -6,15 +6,16 @@ using UnityEngine.Animations.Rigging;
 
 public class Shooting : MonoBehaviour
 {
-    [SerializeField] private MultiAimConstraint[] rightHandConstraint,leftHandConstraint;
-    [SerializeField] private Transform rightHandTarget, leftHandTarget;
+    [SerializeField] private Rig rightHandRig,leftHandRig, spineRig;
+    [SerializeField] private Transform rightHandTarget, leftHandTarget, centerSpineTarget;
     [SerializeField] private float aimRange = 15f;
     [SerializeField] private LayerMask enemyLayerMask;
     [SerializeField] private float rightOffset, leftOffset;
-    private float currentRightWeight, currentLeftWieght;
-    private Transform rightTarget, leftTarget;
+    private float currentRightWeight, currentLeftWieght, currentSpineWieght;
+    private Transform rightTarget, leftTarget, centerTarget;
     [SerializeField] private GunSet[] gunSets;
     private int currentSelectedGunSet;
+    public bool hasRocketLauncher;
     [SerializeField] Bullet bulletPrefab;
 
     [Serializable]
@@ -39,10 +40,19 @@ public class Shooting : MonoBehaviour
     private void Update()
     {
         SwitchGun();
-        DetectRightSide();
-        DetectLeftSide();
-        //DetectEnemies();
-        HandelAim();
+        if (hasRocketLauncher)
+        {
+            rightTarget = null;
+            leftTarget = null;
+            DetectCenter();
+            SetSpineWeight();
+        }
+        else
+        {
+            DetectRightSide();
+            DetectLeftSide();
+            HandelHandAim();
+        }
         CheckForShoot();
     }
 
@@ -75,27 +85,22 @@ public class Shooting : MonoBehaviour
             leftHandTarget.position = Vector3.Lerp(leftHandTarget.position, leftTarget.position + new Vector3(0,0.5f,0), Time.deltaTime * 10);
         }
     }
-
-
-
-    /*void DetectEnemies()
+    
+    void DetectCenter()
     {
         Collider[] enemies = Physics.OverlapSphere(transform.position, aimRange, enemyLayerMask);
-         targetsInRange = enemies
-            .Select(c => c.transform)
-             .OrderBy(t => Vector3.Distance(transform.position, t.position))
-             .ToList();
-        oneInRange = enemies.Length > 0;
-        moreThanOneInRange = enemies.Length > 1;
-        if (oneInRange)
+        centerTarget = enemies.Length > 0
+            ? enemies.Select(c => c.transform)
+                .OrderBy(t => Vector3.Distance(transform.position, t.position))
+                .FirstOrDefault()
+            : null;
+
+        if (centerTarget != null)
         {
-            rightHandTarget.position = Vector3.Lerp(rightHandTarget.position,targetsInRange[0].position, Time.deltaTime * 10);
-            if (moreThanOneInRange)
-            {
-                leftHandTarget.position = Vector3.Lerp(leftHandTarget.position,targetsInRange[1].position, Time.deltaTime * 10);
-            }
+            centerSpineTarget.position = Vector3.Lerp(centerSpineTarget.position, centerTarget.position + new Vector3(0,0.5f,0), Time.deltaTime * 10);
         }
-    }*/
+    }
+    
 
     private float fireDelay;
     private float elaspedTime;
@@ -119,10 +124,14 @@ public class Shooting : MonoBehaviour
         {
             gunSets[currentSelectedGunSet].Guns[1].Shoot(rightTarget,currentSelectedGunSet);
         }
+        if (centerTarget != null)
+        {
+            gunSets[currentSelectedGunSet].Guns[0].Shoot(centerTarget,currentSelectedGunSet);
+        }
     }
     
 
-    void HandelAim()
+    void HandelHandAim()
     {
         SetRightHandWeight();
         SetLeftHandWeight();
@@ -132,20 +141,23 @@ public class Shooting : MonoBehaviour
     {
         float targetWeight1 = rightTarget != null ? 1f : 0f;
         currentRightWeight = Mathf.Lerp(currentRightWeight, targetWeight1, Time.deltaTime * 10f);
-        for (int i = 0; i < rightHandConstraint.Length; i++)
-        {
-            rightHandConstraint[i].weight = currentRightWeight;
-        }
+        rightHandRig.weight = currentRightWeight;
     }
     
     void SetLeftHandWeight()
     {
         float targetWeight2 = leftTarget != null ? 1f : 0f;
         currentLeftWieght = Mathf.Lerp(currentLeftWieght, targetWeight2, Time.deltaTime * 10f);
-        for (int i = 0; i < leftHandConstraint.Length; i++)
-        {
-            leftHandConstraint[i].weight = currentLeftWieght;
-        }
+        leftHandRig.weight = currentLeftWieght;
+    }
+    
+    void SetSpineWeight()
+    {
+        rightHandRig.weight = 0f;
+        leftHandRig.weight = 0f;
+        float targetWeight3 = centerTarget != null ? 1f : 0f;
+        currentSpineWieght = Mathf.Lerp(currentSpineWieght, targetWeight3, Time.deltaTime * 10f);
+        spineRig.weight = currentSpineWieght;
     }
     
     void OnDrawGizmosSelected()
@@ -167,11 +179,20 @@ public class Shooting : MonoBehaviour
         {
             SelectGunSet(1);
         }
+        
+        if (Input.GetKeyDown(KeyCode.Keypad3))
+        {
+            SelectGunSet(2);
+        }
     }
 
     public void SelectGunSet(int gunIndex)
     {
         currentSelectedGunSet = gunIndex;
+        if (gunIndex == 2)
+        {
+            hasRocketLauncher = true;
+        }
         fireDelay = gunSets[gunIndex].Guns[0].fireRate;
         for (int i = 0; i < gunSets.Length; i++)
         {

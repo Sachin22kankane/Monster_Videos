@@ -28,6 +28,7 @@ public class Enemy : PoolableObject
     private readonly int climbUpHash = Animator.StringToHash("ClimbUp");
     private readonly int deathHash = Animator.StringToHash("Death");
     private readonly int attackHash = Animator.StringToHash("Attack");
+    private readonly int standingHash = Animator.StringToHash("Standing");
     private int currentState;
     private CharacterController controller;
     private Vector3 velocity;
@@ -348,5 +349,17 @@ public class Enemy : PoolableObject
         mpb.SetFloat(OutlineThicknessID, outlineThickness);
         targetRenderer.SetPropertyBlock(mpb, 1);
     }
-    
+
+    public void SpawnFromGround()
+    {
+        gameObject.layer = LayerMask.NameToLayer("Default");
+        gameObject.SetActive(true);
+        PlayAnim(standingHash);
+    }
+
+    public void CompleteSpawnAnim()
+    {
+        this.enabled = true;
+        gameObject.layer = LayerMask.NameToLayer("enemy");
+    }
 }

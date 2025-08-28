@@ -270,7 +270,16 @@ public class PlayerController : MonoBehaviour
             {
                 Debug.LogWarning("Color Adjustments not found in the profile!");
             }
-            CameraShake.instance.ChangeFov(90);
+
+            if (CameraShake.instance.hook1)
+            {
+                CameraShake.instance.ChangeFov(70);
+            }
+            else
+            {
+                CameraShake.instance.ChangeFov(40);
+            }
+            
             Time.timeScale = 0.35f;
         }
         playerMaterial.DOFloat(1f, floatPropertyName, 0.05f)

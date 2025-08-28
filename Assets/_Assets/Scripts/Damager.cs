@@ -10,7 +10,7 @@ public class Damager : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             other.GetComponent<PlayerController>().Damage(damage);
-            CameraShake.instance.Shake(0.2f * damage/50f);
+            CameraShake.instance.Shake(0.2f * damage/50f,1.5f,1.25f);
         }
     }
 }

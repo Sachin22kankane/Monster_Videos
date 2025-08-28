@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using Unity.Cinemachine;
 using DG.Tweening;
 
@@ -13,31 +14,68 @@ public class CameraShake : MonoBehaviour
    // [SerializeField] private float shakeAmplitude = 1.5f;
    // [SerializeField] private float shakeFrequency = 2f;
 
-    private CinemachineBasicMultiChannelPerlin noise;
-    private float defaultAmplitude;
-    private float defaultFrequency;
+    //private CinemachineBasicMultiChannelPerlin noise;
+    //private float defaultAmplitude;
+    //private float defaultFrequency;
     private Coroutine shakeCoroutine;
     [SerializeField] RectTransform canvasRect;
     private CinemachineFollow followComponent;
 
+    [SerializeField] private CinemachineCamera[] allCameras;
+    [SerializeField] private List<CinemachineBasicMultiChannelPerlin> allPerlins;
+
+    [Serializable]
+    public class CameraShakeSet
+    {
+        public float defaultAmplitude;
+        public float defaultFrequency;
+        public CinemachineBasicMultiChannelPerlin noise;
+    }
+    
+    private List<CameraShakeSet> shakeSets = new List<CameraShakeSet>();
+    
+    public bool hook1;
+
     void Awake()
     {
         instance = this;
-        
-        noise = virtualCamera.GetCinemachineComponent(CinemachineCore.Stage.Noise) as CinemachineBasicMultiChannelPerlin;
-        defaultAmplitude = noise.AmplitudeGain;
-        defaultFrequency = noise.FrequencyGain;
+        for (int i = 0; i < allCameras.Length; i++)
+        {
+            var noise = allCameras[i].GetCinemachineComponent(
+                CinemachineCore.Stage.Noise
+            ) as CinemachineBasicMultiChannelPerlin;
+
+// Safety check in case noise is null
+            if (noise != null)
+            {
+                CameraShakeSet shakeSet = new CameraShakeSet()
+                {
+                    noise = noise,
+                    defaultAmplitude = noise.AmplitudeGain,
+                    defaultFrequency = noise.FrequencyGain
+                };
+
+                // Add to your list
+                shakeSets.Add(shakeSet);
+            }
+        }
+        //noise = virtualCamera.GetCinemachineComponent(CinemachineCore.Stage.Noise) as CinemachineBasicMultiChannelPerlin;
+        //defaultAmplitude = noise.AmplitudeGain;
+        //defaultFrequency = noise.FrequencyGain;
         followComponent = virtualCamera.GetComponent<CinemachineFollow>();
     }
 
     private void Start()
     {
-        Vector3 currentRotation = virtualCamera.transform.eulerAngles;
-        Vector3 targetRotation = new Vector3(60, currentRotation.y, currentRotation.z);
-        ChangeFollowOffset(new Vector3(0,13,-10));
-        virtualCamera.transform
-            .DORotate(targetRotation, 2)
-            .SetEase(Ease.InOutSine).SetDelay(2);
+        if (hook1 == true)
+        {
+            Vector3 currentRotation = virtualCamera.transform.eulerAngles;
+            Vector3 targetRotation = new Vector3(60, currentRotation.y, currentRotation.z);
+            ChangeFollowOffset(new Vector3(0,13,-10));
+            virtualCamera.transform
+                .DORotate(targetRotation, 2)
+                .SetEase(Ease.InOutSine).SetDelay(2);
+        }
     }
 
     private void Update()
@@ -46,6 +84,15 @@ public class CameraShake : MonoBehaviour
         {
             SwitchFov();
         }
+    }
+
+    public void SwitchCamera(int index)
+    {
+        foreach (CinemachineCamera camera in allCameras)
+        {
+            camera.Priority = 0;
+        }
+        allCameras[index].Priority = 10;
     }
 
     public void ChangeFollowOffset(Vector3 newOffset)
@@ -58,23 +105,36 @@ public class CameraShake : MonoBehaviour
         ).SetEase(Ease.InOutSine).SetDelay(2);
     }
 
-    public void Shake(float duration,float shakeAmplitude = 1.5f,float shakeFrequency = 1.25f)
+    private int previousShakeIndex;
+    public void Shake(float duration,float shakeAmplitude,float shakeFrequency,int shakeSetIndex = 0)
     {
+        if (shakeSetIndex < previousShakeIndex)
+        {
+            return;
+        }
         if (shakeCoroutine != null)
+        {
             StopCoroutine(shakeCoroutine);
-
-        shakeCoroutine = StartCoroutine(ShakeRoutine(shakeAmplitude, shakeFrequency,duration));
+            shakeCoroutine = null;
+        }
+        previousShakeIndex = shakeSetIndex;
+        print("shake camera " + shakeSetIndex);
+        shakeCoroutine = StartCoroutine(ShakeRoutine(duration,shakeAmplitude, shakeFrequency,shakeSetIndex));
     }
 
-    private IEnumerator ShakeRoutine(float duration,float shakeAmplitude,float shakeFrequency)
+    private IEnumerator ShakeRoutine(float duration,float shakeAmplitude,float shakeFrequency,int shakeSetIndex = 0)
     {
-        noise.AmplitudeGain = shakeAmplitude;
-        noise.FrequencyGain = shakeFrequency;
+        shakeSets[shakeSetIndex].noise.AmplitudeGain = shakeAmplitude;
+        shakeSets[shakeSetIndex].noise.FrequencyGain = shakeFrequency;
+        print("Set shake values " + shakeSetIndex);
 
         yield return new WaitForSeconds(duration);
 
-        noise.AmplitudeGain = defaultAmplitude;
-        noise.FrequencyGain = defaultFrequency;
+        print(shakeSetIndex + " Reset Shake Values");
+        print(shakeSets[shakeSetIndex].defaultAmplitude + " " +  shakeSets[shakeSetIndex].defaultFrequency );
+        shakeSets[shakeSetIndex].noise.AmplitudeGain = shakeSets[shakeSetIndex].defaultAmplitude;
+        shakeSets[shakeSetIndex].noise.FrequencyGain = shakeSets[shakeSetIndex].defaultFrequency;
+        previousShakeIndex = 0;
         shakeCoroutine = null;
     }
 

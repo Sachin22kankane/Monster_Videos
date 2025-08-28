@@ -8,6 +8,7 @@ public class Enemy : PoolableObject
 {
     [Header("Movement Settings")]
     public float moveSpeed = 5f;
+    public float speedMultiplier = 1f;
     public float rotationSpeed = 10f;
     public float jumpForce = 6f;
     public float stoppingDistance = 2f;
@@ -39,6 +40,10 @@ public class Enemy : PoolableObject
     private float buildingTopY;
     private bool canStop;
     public bool isBoss;
+    
+    private static readonly int BaseColorID = Shader.PropertyToID("_DiffuseColor");
+    private static readonly int OutlineColorID = Shader.PropertyToID("_OutlineColor");
+    private static readonly int OutlineThicknessID = Shader.PropertyToID("_Outline_Thickness");
 
     private float currenHealth;
     [SerializeField] private float maxHealth;
@@ -53,9 +58,8 @@ public class Enemy : PoolableObject
         if (!isBoss)
         {
             offset = new Vector3(Random.Range(-3,3),0,Random.Range(-1,1));
-            moveSpeed = Random.Range(3.5f, 5.5f);
+            moveSpeed = Random.Range(3.5f, 5.5f) * speedMultiplier;
         }
-        
     }
 
     void Update()
@@ -196,9 +200,9 @@ public class Enemy : PoolableObject
         currentState = targetHash;
     }
 
-    public void Damage()
+    public void Damage(int damage = 10)
     {
-        currenHealth -= 10;
+        currenHealth -= damage;
         PulseEmission(0.75f,0.05f);
         if (currenHealth <= 0)
         {
@@ -247,7 +251,16 @@ public class Enemy : PoolableObject
         {
             emissionSeq.Kill();
         }
-        SetEmissionValue(0.75f);
+
+        if (CameraShake.instance.hook1)
+        {
+            SetEmissionValue(0.75f);
+        }
+        else
+        {
+            SetPlayerBlackDead(Color.black, Color.red, 0.005f);
+        }
+        
         GetComponent<Collider>().enabled = false;
         controller.detectCollisions = false;
         gameObject.layer = 0;
@@ -319,6 +332,21 @@ public class Enemy : PoolableObject
         targetRenderer.GetPropertyBlock(mpb,0);
         mpb.SetFloat(floatPropertyName, currentValue);
         targetRenderer.SetPropertyBlock(mpb,0);
+    }
+    
+    public void SetPlayerBlackDead(Color baseColor, Color outlineColor, float outlineThickness)
+    {
+        // Update Base Material (index 0)
+        targetRenderer.GetPropertyBlock(mpb, 0);
+        mpb.SetColor(BaseColorID, baseColor);
+        targetRenderer.SetPropertyBlock(mpb, 0);
+
+        // Update Outline Material (index 1)
+        if(isBoss) return;
+        targetRenderer.GetPropertyBlock(mpb, 1);
+        mpb.SetColor(OutlineColorID, outlineColor);
+        mpb.SetFloat(OutlineThicknessID, outlineThickness);
+        targetRenderer.SetPropertyBlock(mpb, 1);
     }
     
 }

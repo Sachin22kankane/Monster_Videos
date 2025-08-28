@@ -19166,7 +19166,7 @@ MonoBehaviour:
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 128
-  impactRange: 4
+  impactRange: 2
 --- !u!54 &5392899621606000399
 Rigidbody:
   m_ObjectHideFlags: 0

@@ -33,7 +33,7 @@ Material:
   stringTagMap: {}
   disabledShaderPasses:
   - MOTIONVECTORS
-  m_LockedProperties: _Shadow_Color _Smoothness
+  m_LockedProperties: _Fresnel_cutoff _Shadow_Color _Smoothness
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:

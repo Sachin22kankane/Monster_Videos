@@ -18,7 +18,7 @@ public class Bullet : PoolableObject
     {
         if (EnemyTarget != null)
         {
-            direction = (EnemyTarget.position + new Vector3(0,0.5f,0) - transform.position).normalized;
+            direction = (EnemyTarget.position + new Vector3(0,0.75f,0) - transform.position).normalized;
         }
         transform.position += direction * speed * Time.deltaTime;
         //transform.forward = direction;
@@ -34,7 +34,7 @@ public class Bullet : PoolableObject
     
     public void Launch(Vector3 target)
     {
-        direction = (target + new Vector3(0,0.5f,0) - transform.position).normalized;
+        direction = (target + new Vector3(0,0.75f,0) - transform.position).normalized;
         gameObject.SetActive(true);
         bulletTrail.Play();
         bulletDeactivateCoroutine = StartCoroutine(DisableAfterSomeTime());

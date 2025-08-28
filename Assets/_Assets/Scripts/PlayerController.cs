@@ -81,6 +81,10 @@ public class PlayerController : MonoBehaviour
             die = true;
             PlayAnim(winHash);
             CameraShake.instance.ChangeFov(40);
+            if (!CameraShake.instance.hook1)
+            {
+                CameraShake.instance.SwitchCamera(3);
+            }
         }
         DetectClimbable();
         HandleMovement();
@@ -286,8 +290,15 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void LateUpdate()
+    public void JumpOutfromTrolley(Vector3 target)
     {
-        healthBar.transform.LookAt(transform.position + cam.transform.forward);
+        this.enabled = false;
+        transform.DOJump(target,1.5f,1,1.25f).SetEase(Ease.Linear).OnComplete(() =>
+        {
+            this.enabled = true;
+            CameraShake.instance.SwitchCamera(3);
+        });
+        transform.DORotateQuaternion(Quaternion.Euler(0,90,0), 0.25f);
+        PlayAnim(jumpHash);
     }
 }

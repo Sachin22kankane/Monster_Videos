@@ -45,6 +45,15 @@ public class UpgradeTrigger : MonoBehaviour
         leftOption.gameObject.SetActive(false);
         fenceParent.SetActive(true);
         PlayerController.instance.GetComponent<Shooting>().SelectGunSet(gunindex);
+        if (gunindex == 2)
+        {
+            CameraShake.instance.ChangeFov(60);
+        }
+
+        if (!CameraShake.instance.hook1)
+        {
+            EnemyActivator.Instance.EnableEnemy();
+        }
         //CameraShake.instance.ChangeFov(70,0.25f);
     }
 

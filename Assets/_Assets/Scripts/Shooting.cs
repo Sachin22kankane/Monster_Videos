@@ -10,7 +10,7 @@ public class Shooting : MonoBehaviour
     [SerializeField] private Transform rightHandTarget, leftHandTarget, centerSpineTarget;
     [SerializeField] private float aimRange = 15f;
     [SerializeField] private LayerMask enemyLayerMask;
-    [SerializeField] private float rightOffset, leftOffset;
+    [SerializeField] private float rightOffset, leftOffset, forwardOffset;
     private float currentRightWeight, currentLeftWieght, currentSpineWieght;
     private Transform rightTarget, leftTarget, centerTarget;
     [SerializeField] private GunSet[] gunSets;
@@ -58,7 +58,7 @@ public class Shooting : MonoBehaviour
 
     void DetectRightSide()
     {
-        Collider[] enemies = Physics.OverlapSphere(transform.position + transform.right * rightOffset, aimRange, enemyLayerMask);
+        Collider[] enemies = Physics.OverlapSphere(transform.position + transform.right * rightOffset + transform.forward * forwardOffset, aimRange, enemyLayerMask);
         rightTarget = enemies.Length > 0
             ? enemies.Select(c => c.transform)
                 .OrderBy(t => Vector3.Distance(transform.position, t.position))
@@ -67,13 +67,13 @@ public class Shooting : MonoBehaviour
 
         if (rightTarget != null)
         {
-            rightHandTarget.position = Vector3.Lerp(rightHandTarget.position, rightTarget.position + new Vector3(0,0.5f,0), Time.deltaTime * 10);
+            rightHandTarget.position = Vector3.Lerp(rightHandTarget.position, rightTarget.position + new Vector3(0,0.75f,0), Time.deltaTime * 10);
         }
     }
     
     void DetectLeftSide()
     {
-        Collider[] enemies = Physics.OverlapSphere(transform.position + transform.right * leftOffset, aimRange, enemyLayerMask);
+        Collider[] enemies = Physics.OverlapSphere(transform.position + transform.right * leftOffset + transform.forward * forwardOffset, aimRange, enemyLayerMask);
         leftTarget = enemies.Length > 0
             ? enemies.Select(c => c.transform)
                 .OrderBy(t => Vector3.Distance(transform.position, t.position))
@@ -82,7 +82,7 @@ public class Shooting : MonoBehaviour
 
         if (leftTarget != null)
         {
-            leftHandTarget.position = Vector3.Lerp(leftHandTarget.position, leftTarget.position + new Vector3(0,0.5f,0), Time.deltaTime * 10);
+            leftHandTarget.position = Vector3.Lerp(leftHandTarget.position, leftTarget.position + new Vector3(0,0.75f,0), Time.deltaTime * 10);
         }
     }
     
@@ -163,9 +163,9 @@ public class Shooting : MonoBehaviour
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position + transform.right * rightOffset, aimRange);
+        Gizmos.DrawWireSphere(transform.position + transform.right * rightOffset + transform.forward * forwardOffset, aimRange);
         Gizmos.color = Color.magenta;
-        Gizmos.DrawWireSphere(transform.position + transform.right *leftOffset, aimRange);
+        Gizmos.DrawWireSphere(transform.position + transform.right * leftOffset + transform.forward * forwardOffset, aimRange);
     }
 
     void SwitchGun()

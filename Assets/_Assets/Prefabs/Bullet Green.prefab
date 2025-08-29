@@ -14361,7 +14361,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   EnemyTarget: {fileID: 0}
   speed: 25
+  lifetime: 2
   bulletTrail: {fileID: 2704839243503767828}
+  isMissile: 0
+  enemyLayerMask:
+    serializedVersion: 2
+    m_Bits: 128
+  impactRange: 0
 --- !u!54 &-4706806444763673436
 Rigidbody:
   m_ObjectHideFlags: 0
